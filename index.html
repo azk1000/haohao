@@ -1,0 +1,65 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>하오하오</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>
+:root{--bg:#eef2f0;--ink:#17231f;--card:#fff;--tile:#1f7a5c;--tt:#fff;--ac:#f2b134;--bad:#d64545;--mu:#6b7a74;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#121a17;--ink:#e8f0ec;--card:#1c2823;--tile:#3fb98f;--tt:#0d1512;--mu:#8fa39a}}
+:root[data-theme=dark]{--bg:#121a17;--ink:#e8f0ec;--card:#1c2823;--tile:#3fb98f;--tt:#0d1512;--mu:#8fa39a}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 "Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;min-height:100vh}
+main{max-width:560px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:28px;margin:0 0 4px}.mu{color:var(--mu);font-size:14px}
+.card{background:var(--card);border-radius:14px;padding:16px;margin:14px 0}
+label{display:block;margin-bottom:10px;font-size:14px;color:var(--mu)}
+input,button{font:inherit;border-radius:10px;border:2px solid var(--mu);padding:10px 12px;background:var(--card);color:var(--ink);width:100%}
+input:focus-visible,button:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+button{background:var(--tile);color:var(--tt);border-color:var(--tile);font-weight:700;cursor:pointer}
+button:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:8px;margin-top:10px}
+.ps{display:flex;flex-wrap:wrap;gap:8px}
+.p{padding:6px 12px;border-radius:99px;border:2px solid var(--mu);font-size:14px}
+.p.cur{border-color:var(--ac);background:var(--ac);color:#17231f;font-weight:700}
+.p.out{opacity:.4;text-decoration:line-through}
+.tile{width:120px;height:120px;margin:8px auto;border-radius:18px;background:var(--tile);color:var(--tt);display:grid;place-items:center;font:800 64px/1 "Noto Serif KR","Batang",serif}
+.bar{height:8px;border-radius:4px;background:rgba(128,128,128,.3);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ac)}
+#log{max-height:160px;overflow:auto;font-size:14px;color:var(--mu);white-space:pre-line;margin-top:10px}
+.c{text-align:center}.bad{color:var(--bad);min-height:24px;font-size:14px}
+</style></head><body><main>
+<h1>하오하오</h1><div class="mu">친구들과 하는 끝말잇기</div>
+<div id="note" class="card" hidden></div>
+<section id="join" class="card">
+<label>닉네임<input id="nm" maxlength="8" autocomplete="off"></label>
+<label>방 코드 (영문·숫자)<input id="rc" value="haohao" maxlength="20" autocomplete="off"></label>
+<button id="go">입장</button></section>
+<section id="game" hidden>
+<div class="card"><div class="ps" id="ps"></div></div>
+<div class="card c"><div class="mu" id="hint"></div><div class="tile" id="tile">?</div><div id="lw"></div>
+<div class="bar"><i id="bi" style="width:0"></i></div>
+<div class="row"><input id="wi" autocomplete="off" placeholder="단어 입력"><button id="ws" style="width:90px">제출</button></div>
+<div class="bad" id="er"></div></div>
+<div class="card"><button id="st">시작</button><div id="log"></div></div>
+</section></main>
+<script>
+const $=s=>document.querySelector(s),LIM=15;let ws=null,S=null,dl=0;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const note=t=>{const n=$('#note');n.hidden=!t;n.textContent=t||''};
+const nm=id=>{const p=S&&S.ps.find(p=>p.id==id);return p?p.name:''};
+function draw(){if(!S)return;const play=S.ph=='play',mine=play&&S.cur==S.you,hostme=S.host==S.you;
+$('#ps').innerHTML=S.ps.map(p=>'<span class="p'+(S.cur==p.id&&play?' cur':'')+(p.alive?'':' out')+'">'+esc(p.name)+(p.id==S.you?' (나)':'')+'</span>').join('');
+$('#tile').textContent=play?(S.last?S.last.slice(-1):'♪'):'?';
+$('#hint').textContent=play?(mine?'내 차례!':nm(S.cur)+' 차례'):S.ph=='end'?'우승: '+(nm(S.win)||'없음'):'2명 이상 모이면 방장이 시작해';
+$('#lw').textContent=play?(S.need.length?'「'+S.need.join(' / ')+'」(으)로 시작':'아무 단어로 시작'):'';
+$('#wi').disabled=!mine;$('#ws').disabled=!mine;
+$('#st').disabled=play||!hostme;$('#st').textContent=play?'진행 중':hostme?'시작':'방장이 시작해';
+$('#log').textContent=S.log.slice().reverse().join('\n')}
+function sub(){if(!S||S.ph!='play'||S.cur!=S.you)return;const w=$('#wi').value.trim();if(!w)return;$('#er').textContent='';ws.send(JSON.stringify({t:'word',w}));$('#wi').value=''}
+$('#ws').onclick=sub;$('#wi').onkeydown=e=>{if(e.key=='Enter'&&!e.isComposing)sub()};
+$('#st').onclick=()=>ws.send(JSON.stringify({t:'start'}));
+$('#go').onclick=()=>{const n=$('#nm').value.trim();if(!n)return;$('#go').disabled=true;note('서버에 연결하는 중... 처음엔 30초쯤 걸릴 수 있어.');
+ws=new WebSocket((location.protocol=='https:'?'wss://':'ws://')+location.host);
+ws.onopen=()=>{note('');ws.send(JSON.stringify({t:'join',room:$('#rc').value,name:n}));$('#join').hidden=true;$('#game').hidden=false};
+ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.t=='s'){S=m;dl=Date.now()+m.rem;draw()}else if(m.t=='e')$('#er').textContent=m.m};
+ws.onclose=()=>{note('연결이 끊겼어. 새로고침해줘.');$('#go').disabled=false};
+ws.onerror=()=>note('연결 실패. 잠시 뒤 새로고침해줘.')};
+setInterval(()=>{if(S&&S.ph=='play')$('#bi').style.width=Math.max(0,Math.min(100,(dl-Date.now())/LIM/10))+'%'},200);
+</script></body></html>
