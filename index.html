@@ -23,15 +23,25 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
 button.pr{background:var(--dk);color:#fff;border-color:var(--dk);cursor:pointer}
 button:disabled{opacity:.45}
 .info{background:var(--hd);padding:6px 10px;font-size:13px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px}
-.cards{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
-.cd{width:120px;border:1px solid var(--bd);border-radius:10px;padding:10px;text-align:center;background:#fafafa}
-.cd b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cd i{font-style:normal;font-size:12px;background:var(--dk);color:#fff;border-radius:99px;padding:0 8px}
-.cd.cur{background:var(--dk);color:#fff;border-color:var(--dk)}.cd.cur i{background:#fff;color:var(--dk)}
+.stage{background-color:#f3f3f3;background-image:linear-gradient(45deg,#e9e9e9 25%,transparent 25%,transparent 75%,#e9e9e9 75%),linear-gradient(45deg,#e9e9e9 25%,transparent 25%,transparent 75%,#e9e9e9 75%);background-size:56px 56px;background-position:0 0,28px 28px;padding:16px 10px 12px;border-radius:6px}
+.top{display:flex;gap:16px;justify-content:center;align-items:center;flex-wrap:wrap}
+.board{width:min(100%,420px);background:#222;color:#fff;border-radius:18px;padding:10px 16px 14px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.pw{letter-spacing:.35em;font-size:14px;color:#aaa;min-height:22px}.pw u{color:#fff;font-weight:700;text-decoration:none;border-bottom:2px solid #fff}
+.tile{height:84px;display:grid;place-items:center;font:800 58px/1 "Noto Serif KR","Batang",serif}
+.bar{position:relative;height:18px;background:#4a4a4a;border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:#e6e6e6}
+.bar b{position:absolute;right:8px;top:0;font-size:12px;line-height:18px;color:#fff;mix-blend-mode:difference}
+.chain{width:92px;height:92px;border-radius:50%;background:#222;color:#fff;display:grid;place-content:center;text-align:center;line-height:1.1;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.chain small{font-size:12px;letter-spacing:.15em}.chain b{font-size:32px}
+.hint{text-align:center;margin-top:12px;font-weight:700}.lw{text-align:center;color:#555;font-size:14px;min-height:21px}
+.hs{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:8px 0 12px;min-height:30px}
+.hs span{background:#222;color:#fff;border-radius:6px;padding:3px 12px;font-size:14px}
+.cards{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.cd{width:112px;border:1px solid var(--bd);border-radius:10px;padding:10px 8px;text-align:center;background:#ececec;position:relative}
+.cd b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+.cd i{position:absolute;top:6px;right:6px;font-style:normal;font-size:11px;background:var(--dk);color:#fff;border-radius:99px;padding:0 7px}
+.av{width:54px;height:54px;border-radius:50% 50% 12px 12px;background:#c9c9c9;color:#555;margin:2px auto 6px;display:grid;place-items:center;font-weight:800;font-size:22px}
+.cd.cur{background:#fff;border:2px solid #222;box-shadow:0 4px 12px rgba(0,0,0,.3);transform:translateY(-4px)}.cd.cur .av{background:#222;color:#fff}
 .cd.out{opacity:.4;text-decoration:line-through}
-.game{text-align:center;padding:10px 0}
-.tile{width:110px;height:110px;margin:6px auto;border-radius:16px;background:var(--dk);color:#fff;display:grid;place-items:center;font:800 60px/1 "Noto Serif KR","Batang",serif}
-.bar{height:6px;background:#ddd;border-radius:3px;overflow:hidden;max-width:360px;margin:8px auto}.bar i{display:block;height:100%;background:var(--dk)}
 #chat{margin-top:12px}
 #log{height:170px;overflow:auto;font-size:14px}
 .ln{display:grid;grid-template-columns:90px 1fr auto;gap:8px;padding:2px 6px}
@@ -52,8 +62,10 @@ form{display:flex;gap:8px;margin-top:8px}form input{flex:1}
 <div class="grid"><div><div class="hd"><span>접속자 목록 [<span id="uc">0</span>명]</span></div><div class="box" id="us"></div></div>
 <div><div class="hd"><span>방 목록 [<span id="rc">0</span>개]</span></div><div class="box" id="rs"></div></div></div></div></div>
 <div id="room" hidden><div class="tabs"><button class="tab on" id="st">시작</button><button class="tab" id="lv">나가기</button></div>
-<div class="pn"><div class="info"><span id="ti"></span><span id="ri"></span></div><div class="cards" id="cs"></div>
-<div class="game"><div id="hint" style="color:var(--mu)"></div><div class="tile" id="tile">?</div><div id="lw"></div><div class="bar"><i id="bi" style="width:0"></i></div></div></div></div>
+<div class="pn"><div class="info"><span id="ti"></span><span id="ri"></span></div>
+<div class="stage"><div class="top"><div class="board"><div class="pw" id="pw">&nbsp;</div><div class="tile" id="tile">?</div><div class="bar"><i id="bi" style="width:0"></i><b id="sec"></b></div></div>
+<div class="chain" id="chain" hidden><small>CHAIN</small><b id="cn">0</b></div></div>
+<div class="hint" id="hint"></div><div class="lw" id="lw"></div><div class="hs" id="hs"></div><div class="cards" id="cs"></div></div></div></div>
 <div id="chat" class="pn"><div class="hd"><span>채팅</span></div><div id="log"></div>
 <form id="cf"><input id="ci" maxlength="100" autocomplete="off" placeholder="채팅"><button class="pr">전송</button></form></div>
 </div>
@@ -76,8 +88,11 @@ const nm=id=>{const p=S&&S.ps.find(p=>p.id==id);return p?p.name:''};
 function room(s){S=s;dl=Date.now()+s.rem;const play=s.ph=='play',mine=play&&s.cur==s.you,me=s.host==s.you;
  tx($('#ti'),'['+s.id+'] '+s.title);tx($('#ri'),'한국어 끝말잇기 · 참여자 '+s.ps.length+' / 8 · 제한 '+s.lim+'초');
  $('#cs').replaceChildren(...s.ps.map(p=>{const d=mk('div','cd'+(play&&s.cur==p.id?' cur':'')+(p.alive?'':' out'));
-  if(p.id==s.host)d.append(mk('i','','방장'));d.append(mk('b','',p.name+(p.id==s.you?' (나)':'')));if(p.spec)d.append(mk('small','','관전'));return d}));
+  if(p.id==s.host)d.append(mk('i','','방장'));d.append(mk('div','av',p.name.slice(0,1)),mk('b','',p.name+(p.id==s.you?' (나)':'')));if(p.spec)d.append(mk('small','','관전'));return d}));
+ $('#pw').replaceChildren(...(s.last?[document.createTextNode(s.last.slice(0,-1)),mk('u','',s.last.slice(-1))]:[document.createTextNode('\u00a0')]));
  tx($('#tile'),play?(s.last?s.last.slice(-1):'♪'):'?');
+ $('#chain').hidden=!play&&s.ph!='end';tx($('#cn'),s.chain||0);
+ $('#hs').replaceChildren(...(s.hist||[]).map((w,i)=>{const e=mk('span','',w);if(i)e.style.opacity='.6';return e}));
  tx($('#hint'),play?(mine?'내 차례! 단어를 입력해줘':nm(s.cur)+' 차례'):s.ph=='end'?'우승: '+(nm(s.win)||'없음'):'2명 이상 모이면 방장이 시작해');
  tx($('#lw'),play?(s.need.length?'「'+s.need.join(' / ')+'」(으)로 시작':'아무 단어로 시작'):'');
  const b=$('#st');b.disabled=play||!me;tx(b,play?'진행 중':me?'시작':'방장이 시작해');
@@ -96,5 +111,5 @@ function connect(){const n=$('#nm').value.trim();if(!n)return;$('#go').disabled=
   else if(m.t=='s')room(m);else if(m.t=='c')line(m);else if(m.t=='e'){if($('#app').hidden){$('#go').disabled=false;tx($('#go'),'입장')}err(m.m);if($('#app').hidden)alert(m.m)}};
  ws.onclose=()=>{if(!$('#app').hidden)err('연결이 끊겼어. 새로고침해줘.');else{$('#go').disabled=false;tx($('#go'),'입장')}}}
 $('#go').onclick=connect;$('#nm').onkeydown=e=>{if(e.key=='Enter'&&!e.isComposing)connect()};
-setInterval(()=>{if(S&&S.ph=='play'){const f=Math.max(0,Math.min(100,(dl-Date.now())/S.lim/10));$('#bi').style.width=f+'%'}},200);
+setInterval(()=>{if(S&&S.ph=='play'){const r=Math.max(0,dl-Date.now());$('#bi').style.width=Math.min(100,r/S.lim/10)+'%';tx($('#sec'),(r/1000).toFixed(1)+'초')}else if(S){$('#bi').style.width='0';tx($('#sec'),'')}},100);
 </script></body></html>
