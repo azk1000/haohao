@@ -19,7 +19,7 @@ function bcast(R){
     for(const u of R.players.values())if(!(u.id in R.nm))ps.push({id:u.id,name:u.name,spec:true,alive:true});
   }else ps=[...R.players.values()].map(u=>({id:u.id,name:u.name,alive:true}));
   const rem=Math.max(0,R.dl-Date.now());
-  for(const u of R.players.values())send(u.ws,{t:'s',you:u.id,id:R.id,title:R.title,lim:R.lim,host:host(R),ph:R.ph,ps,cur:R.cur,last:R.last,need:R.need,win:R.win,rem});
+  for(const u of R.players.values())send(u.ws,{t:'s',you:u.id,id:R.id,title:R.title,lim:R.lim,host:host(R),ph:R.ph,ps,cur:R.cur,last:R.last,need:R.need,win:R.win,rem,hist:R.used.slice(-5).reverse(),chain:R.used.length});
 }
 const turn=R=>{R.dl=Date.now()+R.lim*1000;bcast(R)};
 function drop(R,id,msg){
