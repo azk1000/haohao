@@ -2,7 +2,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
 :root{color-scheme:light;--bg:#f2f2f2;--pn:#fff;--hd:#e9e9e9;--bd:#d6d6d6;--ink:#1a1a1a;--mu:#7a7a7a;--dk:#222}
-*{box-sizing:border-box}html,body{margin:0}
+*{box-sizing:border-box}[hidden]{display:none!important}html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font:15px/1.5 "Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif}
 main{max-width:1000px;margin:0 auto;padding:16px 12px 40px}
 .tabs{display:flex;gap:2px;flex-wrap:wrap}
@@ -39,8 +39,10 @@ button.pr{background:var(--dk);color:#fff;border-color:var(--dk);cursor:pointer}
 .cd b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
 .cd i{position:absolute;top:6px;right:6px;font-style:normal;font-size:11px;background:var(--dk);color:#fff;border-radius:99px;padding:0 7px}
 .cd em{display:block;font:700 24px/1.2 ui-monospace,Menlo,Consolas,monospace;font-style:normal;margin-top:2px}
-.av{width:58px;height:58px;border-radius:50% 50% 12px 12px;background:#c9c9c9;color:#555;margin:2px auto 6px;display:grid;place-items:center;font-weight:800;font-size:22px}
-.cd.cur{background:#fff;border:2px solid #222;box-shadow:0 4px 12px rgba(0,0,0,.3);transform:translateY(-4px)}.cd.cur .av{background:#222;color:#fff}
+.av{width:60px;height:60px;border-radius:12px;background:#c4c6c8;margin:2px auto 8px;position:relative;overflow:hidden}
+.av::before,.av::after{content:"";position:absolute;left:50%;transform:translateX(-50%);background:#f1f2f3}
+.av::before{top:17%;width:37%;height:37%;border-radius:50%}.av::after{top:60%;width:78%;height:72%;border-radius:50%}
+.cd.cur{background:#fff;border:2px solid #222;box-shadow:0 4px 12px rgba(0,0,0,.3);transform:translateY(-4px)}
 .cd.out{opacity:.4}
 #chat{margin-top:12px}#log{height:170px;overflow:auto;font-size:14px}
 .ln{display:grid;grid-template-columns:110px 1fr auto;gap:8px;padding:2px 6px}
@@ -106,7 +108,7 @@ function room(s){S=s;r0=Date.now();const play=s.ph=='play',mine=play&&s.st=='tur
  tx($('#ti'),'['+s.id+'] '+s.title);tx($('#ri'),rule(s)+' · 참여자 '+s.pl.length+' / '+s.maxp);
  $('#stage').classList.toggle('on',play);$('#top').hidden=!play;$('#hs').hidden=!play;
  $('#cs').replaceChildren(...s.pl.map(p=>{const d=mk('div','cd'+(play&&s.cur==p.id?' cur':'')+(p.alive?'':' out'));
-  if(p.id==s.host)d.append(mk('i','','방장'));d.append(mk('div','av',p.name.slice(0,1)),mk('b','',p.name+(p.id==s.you?' (나)':'')));
+  if(p.id==s.host)d.append(mk('i','','방장'));d.append(mk('div','av'),mk('b','',p.name));
   if(play&&!p.spec)d.append(mk('em','',String(Math.max(0,p.sc)).padStart(5,'0')));if(p.spec)d.append(mk('small','','관전'));return d}));
  if(play){
   $('#pw').replaceChildren(...s.tw.split('').map((c,i)=>i==s.round-1?mk('u','',c):document.createTextNode(c)));
