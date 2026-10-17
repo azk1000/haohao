@@ -1,76 +1,90 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8"><title>하오하오</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
-:root{color-scheme:light;--bg:#f2f2f2;--pn:#fff;--hd:#e9e9e9;--bd:#d6d6d6;--ink:#1a1a1a;--mu:#7a7a7a;--dk:#222;--ac:#222}
+:root{color-scheme:light;--bg:#f2f2f2;--pn:#fff;--hd:#e9e9e9;--bd:#d6d6d6;--ink:#1a1a1a;--mu:#7a7a7a;--dk:#222}
 *{box-sizing:border-box}html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font:15px/1.5 "Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif}
 main{max-width:1000px;margin:0 auto;padding:16px 12px 40px}
 .tabs{display:flex;gap:2px;flex-wrap:wrap}
-.tab{border:0;background:#dcdcdc;color:var(--ink);padding:10px 24px;border-radius:10px 10px 0 0;font:inherit;cursor:pointer;width:auto}
-.tab:hover{background:#cfcfcf}.tab.on{background:var(--dk);color:#fff}
-.tab:disabled{opacity:.45;cursor:default}
+.tab{border:0;background:#dcdcdc;color:var(--ink);padding:10px 24px;border-radius:10px 10px 0 0;font:inherit;cursor:pointer}
+.tab:hover:not(:disabled){background:#cfcfcf}.tab:disabled{opacity:.45;cursor:default}
 .pn{background:var(--pn);border:1px solid var(--bd);padding:10px}
-.hd{background:var(--hd);padding:4px 10px;font-size:13px;color:#444;margin-bottom:8px;display:flex;justify-content:space-between}
+.hd{background:var(--hd);padding:4px 10px;font-size:13px;color:#444;margin-bottom:8px}
 .grid{display:grid;grid-template-columns:230px 1fr;gap:10px}
 .box{min-height:220px;max-height:300px;overflow:auto}
 #us div{padding:2px 6px;font-size:14px}
 .rm{display:grid;grid-template-columns:56px 1fr auto;gap:10px;border:1px solid var(--bd);padding:8px 12px;margin-bottom:8px;cursor:pointer;align-items:center}
 .rm:hover{background:#f7f7f7}.rm.pl{background:#ececec;color:#555}
-.rm .no{font-size:22px}.rm small{display:block;color:var(--mu)}.rm .st{text-align:right;font-size:13px}
-#mkf{margin:0 0 10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.rm .no{font-size:22px}.rm small{display:block;color:var(--mu)}.rm .st{text-align:right;font-size:13px;white-space:pre}
 input,select,button{font:inherit;border:1px solid var(--bd);border-radius:8px;padding:8px 10px;background:#fff;color:var(--ink)}
 input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--dk);outline-offset:1px}
-button.pr{background:var(--dk);color:#fff;border-color:var(--dk);cursor:pointer}
-button:disabled{opacity:.45}
+button.pr{background:var(--dk);color:#fff;border-color:var(--dk);cursor:pointer}button:disabled{opacity:.45}
 .info{background:var(--hd);padding:6px 10px;font-size:13px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:10px}
-.stage{background-color:#f3f3f3;background-image:linear-gradient(45deg,#e9e9e9 25%,transparent 25%,transparent 75%,#e9e9e9 75%),linear-gradient(45deg,#e9e9e9 25%,transparent 25%,transparent 75%,#e9e9e9 75%);background-size:56px 56px;background-position:0 0,28px 28px;padding:16px 10px 12px;border-radius:6px}
+.stage{border-radius:6px;padding:10px}
+.stage.on{background-color:#f3f3f3;background-image:linear-gradient(45deg,#e9e9e9 25%,transparent 25%,transparent 75%,#e9e9e9 75%),linear-gradient(45deg,#e9e9e9 25%,transparent 25%,transparent 75%,#e9e9e9 75%);background-size:56px 56px;background-position:0 0,28px 28px;padding:16px 10px 12px}
 .top{display:flex;gap:16px;justify-content:center;align-items:center;flex-wrap:wrap}
-.board{width:min(100%,420px);background:#222;color:#fff;border-radius:18px;padding:10px 16px 14px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.25)}
-.pw{letter-spacing:.35em;font-size:14px;color:#aaa;min-height:22px}.pw u{color:#fff;font-weight:700;text-decoration:none;border-bottom:2px solid #fff}
+.board{width:min(100%,430px);background:#222;color:#fff;border-radius:18px;padding:10px 16px 14px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.pw{letter-spacing:.5em;font-size:15px;color:#999;min-height:24px}.pw u{color:#fff;font-weight:700;text-decoration:none;border-bottom:2px solid #fff}
 .tile{height:84px;display:grid;place-items:center;font:800 58px/1 "Noto Serif KR","Batang",serif}
-.bar{position:relative;height:18px;background:#4a4a4a;border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:#e6e6e6}
-.bar b{position:absolute;right:8px;top:0;font-size:12px;line-height:18px;color:#fff;mix-blend-mode:difference}
+.bar{position:relative;height:20px;border-radius:10px;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%}.bar b{position:absolute;right:10px;top:0;font-size:12px;line-height:20px;mix-blend-mode:difference;color:#fff}
+.b1{background:#555}.b1 i{background:#f1f1f1}.b2{background:#3a3a3a;height:16px}.b2 b{line-height:16px}.b2 i{background:#8d8d8d}
 .chain{width:92px;height:92px;border-radius:50%;background:#222;color:#fff;display:grid;place-content:center;text-align:center;line-height:1.1;box-shadow:0 4px 14px rgba(0,0,0,.25)}
 .chain small{font-size:12px;letter-spacing:.15em}.chain b{font-size:32px}
-.hint{text-align:center;margin-top:12px;font-weight:700}.lw{text-align:center;color:#555;font-size:14px;min-height:21px}
+.hint{text-align:center;margin:12px 0 4px;font-weight:700}.lw{text-align:center;color:#555;font-size:14px;min-height:21px}
 .hs{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:8px 0 12px;min-height:30px}
-.hs span{background:#222;color:#fff;border-radius:6px;padding:3px 12px;font-size:14px}
+.hs span{background:#222;color:#fff;border-radius:6px;padding:3px 12px;font-size:14px}.hs small{opacity:.7;margin-left:6px}
 .cards{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
-.cd{width:112px;border:1px solid var(--bd);border-radius:10px;padding:10px 8px;text-align:center;background:#ececec;position:relative}
+.cd{width:124px;border:1px solid var(--bd);border-radius:10px;padding:12px 8px;text-align:center;background:#ececec;position:relative}
 .cd b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
 .cd i{position:absolute;top:6px;right:6px;font-style:normal;font-size:11px;background:var(--dk);color:#fff;border-radius:99px;padding:0 7px}
-.av{width:54px;height:54px;border-radius:50% 50% 12px 12px;background:#c9c9c9;color:#555;margin:2px auto 6px;display:grid;place-items:center;font-weight:800;font-size:22px}
+.cd em{display:block;font:700 24px/1.2 ui-monospace,Menlo,Consolas,monospace;font-style:normal;margin-top:2px}
+.av{width:58px;height:58px;border-radius:50% 50% 12px 12px;background:#c9c9c9;color:#555;margin:2px auto 6px;display:grid;place-items:center;font-weight:800;font-size:22px}
 .cd.cur{background:#fff;border:2px solid #222;box-shadow:0 4px 12px rgba(0,0,0,.3);transform:translateY(-4px)}.cd.cur .av{background:#222;color:#fff}
-.cd.out{opacity:.4;text-decoration:line-through}
-#chat{margin-top:12px}
-#log{height:170px;overflow:auto;font-size:14px}
-.ln{display:grid;grid-template-columns:90px 1fr auto;gap:8px;padding:2px 6px}
+.cd.out{opacity:.4}
+#chat{margin-top:12px}#log{height:170px;overflow:auto;font-size:14px}
+.ln{display:grid;grid-template-columns:110px 1fr auto;gap:8px;padding:2px 6px}
 .ln .n{color:#555;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ln .ts{color:#aaa;font-size:12px}
 .ln.a{background:#efefef}.ln.a .n{font-weight:700}.ln.g .m{font-weight:700}
-form{display:flex;gap:8px;margin-top:8px}form input{flex:1}
+form#cf{display:flex;gap:8px;margin-top:8px}form#cf input{flex:1}
 #er{min-height:22px;color:#b00020;font-size:14px;padding:2px 4px}
 #login{max-width:340px;margin:12vh auto;text-align:center}#login h1{font-size:34px;margin:0 0 4px}
 #login input{width:100%;margin:12px 0 8px}#login button{width:100%}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.4);display:grid;place-items:center;padding:12px;z-index:9}.ov[hidden]{display:none}
+.dlg{background:#eee;border-radius:10px;width:min(100%,380px);padding:0 0 16px;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+.dlg h4{margin:0;padding:8px 14px;background:var(--hd);border-radius:10px 10px 0 0;display:flex;justify-content:space-between;font-size:14px}
+.dlg h4 button{border:0;background:none;padding:0 4px;cursor:pointer;font-size:16px}
+.fr{display:grid;grid-template-columns:96px 1fr;gap:10px;align-items:center;padding:6px 18px}.fr label{text-align:right;font-size:14px}
+.fr input[type=checkbox]{width:18px;height:18px;padding:0}
+.dlg .ok{display:block;margin:12px auto 0;width:120px}
 @media(max-width:700px){.grid{grid-template-columns:1fr}.box{max-height:200px}}
 </style></head><body><main>
-<section id="login" class="pn"><h1>하오하오</h1><div class="mu" style="color:var(--mu)">친구들과 하는 끝말잇기</div>
+<section id="login" class="pn"><h1>하오하오</h1><div style="color:var(--mu)">친구들과 하는 끝말잇기</div>
 <input id="nm" maxlength="8" placeholder="닉네임" autocomplete="off"><button class="pr" id="go">입장</button></section>
 <div id="app" hidden>
 <div id="er"></div>
 <div id="lobby"><div class="tabs"><button class="tab" id="mk">방 만들기</button></div>
-<div class="pn"><div id="mkf" hidden><input id="tt" maxlength="16" placeholder="방 제목"><select id="lm"><option value="10">10초</option><option value="15" selected>15초</option><option value="20">20초</option><option value="30">30초</option></select><button class="pr" id="mk2">만들기</button></div>
-<div class="grid"><div><div class="hd"><span>접속자 목록 [<span id="uc">0</span>명]</span></div><div class="box" id="us"></div></div>
-<div><div class="hd"><span>방 목록 [<span id="rc">0</span>개]</span></div><div class="box" id="rs"></div></div></div></div></div>
-<div id="room" hidden><div class="tabs"><button class="tab on" id="st">시작</button><button class="tab" id="lv">나가기</button></div>
+<div class="pn"><div class="grid"><div><div class="hd">접속자 목록 [<span id="uc">0</span>명]</div><div class="box" id="us"></div></div>
+<div><div class="hd">방 목록 [<span id="rc">0</span>개]</div><div class="box" id="rs"></div></div></div></div></div>
+<div id="room" hidden><div class="tabs"><button class="tab" id="cfg">방 설정</button><button class="tab" id="st">시작</button><button class="tab" id="lv">나가기</button></div>
 <div class="pn"><div class="info"><span id="ti"></span><span id="ri"></span></div>
-<div class="stage"><div class="top"><div class="board"><div class="pw" id="pw">&nbsp;</div><div class="tile" id="tile">?</div><div class="bar"><i id="bi" style="width:0"></i><b id="sec"></b></div></div>
-<div class="chain" id="chain" hidden><small>CHAIN</small><b id="cn">0</b></div></div>
+<div class="stage" id="stage"><div class="top" id="top" hidden><div class="board"><div class="pw" id="pw">&nbsp;</div><div class="tile" id="tile">?</div>
+<div class="bar b1"><i id="b1i" style="width:0"></i><b id="b1t"></b></div><div class="bar b2"><i id="b2i" style="width:0"></i><b id="b2t"></b></div></div>
+<div class="chain"><small>CHAIN</small><b id="cn">0</b></div></div>
 <div class="hint" id="hint"></div><div class="lw" id="lw"></div><div class="hs" id="hs"></div><div class="cards" id="cs"></div></div></div></div>
-<div id="chat" class="pn"><div class="hd"><span>채팅</span></div><div id="log"></div>
+<div id="chat" class="pn"><div class="hd">채팅</div><div id="log"></div>
 <form id="cf"><input id="ci" maxlength="100" autocomplete="off" placeholder="채팅"><button class="pr">전송</button></form></div>
 </div>
+<div class="ov" id="dlg" hidden><div class="dlg"><h4><span>방 설정</span><button id="dx" type="button" aria-label="닫기">✕</button></h4>
+<div class="fr"><label for="dt">방 제목</label><input id="dt" maxlength="16"></div>
+<div class="fr"><label for="dp">비밀번호</label><input id="dp" maxlength="8" autocomplete="off"></div>
+<div class="fr"><label for="dn">플레이어 수</label><input id="dn" type="number" min="2" max="8"></div>
+<div class="fr"><label for="dr">라운드 수</label><input id="dr" type="number" min="1" max="10"></div>
+<div class="fr"><label for="dm">라운드 시간</label><select id="dm"><option value="10">10초</option><option value="30">30초</option><option value="60">60초</option><option value="90">90초</option><option value="120">120초</option><option value="150">150초</option></select></div>
+<div class="fr"><label for="dc">특수 규칙</label><span><input id="dc" type="checkbox"> 매너</span></div>
+<button class="pr ok" id="dok" type="button">확인</button></div></div>
 <script>
-const $=s=>document.querySelector(s),LD=['','']; let ws,S=null,dl=0,inRoom=false,erT;
+const $=s=>document.querySelector(s);let ws,S=null,r0=0,inRoom=false,erT,dmode='mk';
 const tx=(el,t)=>{el.textContent=t;return el};
 const mk=(tag,cls,t)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(t!=null)e.textContent=t;return e};
 const err=m=>{$('#er').textContent=m;clearTimeout(erT);erT=setTimeout(()=>$('#er').textContent='',3500)};
@@ -79,28 +93,41 @@ function view(r){inRoom=r;$('#lobby').hidden=r;$('#room').hidden=!r;$('#log').te
 function line(m){const d=mk('div','ln '+m.k),log=$('#log');
  d.append(mk('span','n',m.k=='a'?'알림':m.k=='g'?'단어 · '+m.n:m.n),mk('span','m',m.m),mk('span','ts',new Date().toLocaleTimeString('ko-KR')));
  const bot=log.scrollTop+log.clientHeight>=log.scrollHeight-30;log.append(d);if(bot)log.scrollTop=log.scrollHeight}
+const rule=o=>'한국어 끝말잇기 · 라운드 '+o.rounds+' · '+o.time+'초'+(o.manner?' · 매너':'');
 function lobby(l){tx($('#uc'),l.us.length);tx($('#rc'),l.rs.length);
  $('#us').replaceChildren(...l.us.map(u=>mk('div','',u.name+(u.room?' (방 '+u.room+')':''))));
- $('#rs').replaceChildren(...l.rs.map(r=>{const d=mk('div','rm'+(r.play?' pl':''));d.onclick=()=>out({t:'jn',room:r.id});
-  const i=mk('div');i.append(mk('b','',r.title),mk('small','','한국어 끝말잇기 · 제한 '+r.lim+'초'));
-  d.append(mk('div','no',r.id),i,mk('div','st',r.n+' / '+r.max+'\n'+(r.play?'진행중':'대기')));d.lastChild.style.whiteSpace='pre';return d}))}
-const nm=id=>{const p=S&&S.ps.find(p=>p.id==id);return p?p.name:''};
-function room(s){S=s;dl=Date.now()+s.rem;const play=s.ph=='play',mine=play&&s.cur==s.you,me=s.host==s.you;
- tx($('#ti'),'['+s.id+'] '+s.title);tx($('#ri'),'한국어 끝말잇기 · 참여자 '+s.ps.length+' / 8 · 제한 '+s.lim+'초');
- $('#cs').replaceChildren(...s.ps.map(p=>{const d=mk('div','cd'+(play&&s.cur==p.id?' cur':'')+(p.alive?'':' out'));
-  if(p.id==s.host)d.append(mk('i','','방장'));d.append(mk('div','av',p.name.slice(0,1)),mk('b','',p.name+(p.id==s.you?' (나)':'')));if(p.spec)d.append(mk('small','','관전'));return d}));
- $('#pw').replaceChildren(...(s.last?[document.createTextNode(s.last.slice(0,-1)),mk('u','',s.last.slice(-1))]:[document.createTextNode('\u00a0')]));
- tx($('#tile'),play?(s.last?s.last.slice(-1):'♪'):'?');
- $('#chain').hidden=!play&&s.ph!='end';tx($('#cn'),s.chain||0);
- $('#hs').replaceChildren(...(s.hist||[]).map((w,i)=>{const e=mk('span','',w);if(i)e.style.opacity='.6';return e}));
- tx($('#hint'),play?(mine?'내 차례! 단어를 입력해줘':nm(s.cur)+' 차례'):s.ph=='end'?'우승: '+(nm(s.win)||'없음'):'2명 이상 모이면 방장이 시작해');
- tx($('#lw'),play?(s.need.length?'「'+s.need.join(' / ')+'」(으)로 시작':'아무 단어로 시작'):'');
+ $('#rs').replaceChildren(...l.rs.map(r=>{const d=mk('div','rm'+(r.play?' pl':''));
+  d.onclick=()=>{let pw='';if(r.lock){pw=prompt('비밀번호를 입력해줘');if(pw==null)return}out({t:'jn',room:r.id,pw})};
+  const i=mk('div');i.append(mk('b','',(r.lock?'🔒 ':'')+r.title),mk('small','',rule(r)));
+  d.append(mk('div','no',r.id),i,mk('div','st',r.n+' / '+r.max+'\n'+(r.play?'진행중':'대기')));return d}))}
+const nm=id=>{const p=S&&S.pl.find(p=>p.id==id);return p?p.name:''};
+const sec=ms=>(Math.max(0,ms)/1000).toFixed(1)+'초';
+function room(s){S=s;r0=Date.now();const play=s.ph=='play',mine=play&&s.st=='turn'&&s.cur==s.you,me=s.host==s.you;
+ tx($('#ti'),'['+s.id+'] '+s.title);tx($('#ri'),rule(s)+' · 참여자 '+s.pl.length+' / '+s.maxp);
+ $('#stage').classList.toggle('on',play);$('#top').hidden=!play;$('#hs').hidden=!play;
+ $('#cs').replaceChildren(...s.pl.map(p=>{const d=mk('div','cd'+(play&&s.cur==p.id?' cur':'')+(p.alive?'':' out'));
+  if(p.id==s.host)d.append(mk('i','','방장'));d.append(mk('div','av',p.name.slice(0,1)),mk('b','',p.name+(p.id==s.you?' (나)':'')));
+  if(play&&!p.spec)d.append(mk('em','',String(Math.max(0,p.sc)).padStart(5,'0')));if(p.spec)d.append(mk('small','','관전'));return d}));
+ if(play){
+  $('#pw').replaceChildren(...s.tw.split('').map((c,i)=>i==s.round-1?mk('u','',c):document.createTextNode(c)));
+  tx($('#tile'),s.last?s.last.slice(-1):s.need[0]||'?');tx($('#cn'),s.chain);
+  $('#hs').replaceChildren(...s.hist.map((h,i)=>{const e=mk('span','',h.w);e.append(mk('small','','+'+h.s));if(i)e.style.opacity='.6';return e}));
+  tx($('#hint'),s.st=='ready'?'라운드 '+s.round+' 준비!':s.st=='over'?'시간 초과!':mine?'내 차례! 단어를 입력해줘':nm(s.cur)+' 차례');
+  tx($('#lw'),s.need.length?'「'+s.need.join(' / ')+'」(으)로 시작':'');
+ }else{tx($('#hint'),s.res||'2명 이상 모이면 방장이 시작해');tx($('#lw'),'')}
+ $('#cfg').hidden=false;$('#cfg').disabled=play||!me;
  const b=$('#st');b.disabled=play||!me;tx(b,play?'진행 중':me?'시작':'방장이 시작해');
  $('#ci').placeholder=mine?'단어 입력 (내 차례)':'채팅'}
+function openDlg(mode){dmode=mode;const s=mode=='set'&&S;
+ $('#dt').value=s?S.title:'';$('#dp').value=s?S.pw:'';$('#dn').value=s?S.maxp:8;$('#dr').value=s?S.rounds:5;$('#dm').value=s?S.time:60;$('#dc').checked=s?S.manner:false;
+ $('#dlg').hidden=false;$('#dt').focus()}
+const closeDlg=()=>{$('#dlg').hidden=true};
+$('#dok').onclick=()=>{out({t:dmode,title:$('#dt').value,pw:$('#dp').value,maxp:$('#dn').value,rounds:$('#dr').value,time:$('#dm').value,manner:$('#dc').checked});closeDlg()};
+$('#dx').onclick=closeDlg;$('#dlg').onclick=e=>{if(e.target.id=='dlg')closeDlg()};
+document.onkeydown=e=>{if(e.key=='Escape')closeDlg()};
+$('#mk').onclick=()=>openDlg('mk');$('#cfg').onclick=()=>openDlg('set');
 $('#cf').onsubmit=e=>{e.preventDefault();const v=$('#ci').value.trim();if(!v)return;$('#ci').value='';
- if(inRoom&&S&&S.ph=='play'&&S.cur==S.you)out({t:'word',w:v});else out({t:'chat',m:v})};
-$('#mk').onclick=()=>{$('#mkf').hidden=!$('#mkf').hidden};
-$('#mk2').onclick=()=>{out({t:'mk',title:$('#tt').value,lim:$('#lm').value});$('#tt').value='';$('#mkf').hidden=true};
+ if(inRoom&&S&&S.ph=='play'&&S.st=='turn'&&S.cur==S.you)out({t:'word',w:v});else out({t:'chat',m:v})};
 $('#st').onclick=()=>out({t:'start'});$('#lv').onclick=()=>out({t:'lv'});
 function connect(){const n=$('#nm').value.trim();if(!n)return;$('#go').disabled=true;tx($('#go'),'연결 중... (처음엔 30초쯤 걸려)');
  ws=new WebSocket((location.protocol=='https:'?'wss://':'ws://')+location.host);
@@ -108,8 +135,11 @@ function connect(){const n=$('#nm').value.trim();if(!n)return;$('#go').disabled=
  ws.onmessage=e=>{const m=JSON.parse(e.data);
   if(m.t=='ok'){$('#login').hidden=true;$('#app').hidden=false;view(false)}
   else if(m.t=='l'&&!inRoom)lobby(m);else if(m.t=='r')view(true);else if(m.t=='q')view(false);
-  else if(m.t=='s')room(m);else if(m.t=='c')line(m);else if(m.t=='e'){if($('#app').hidden){$('#go').disabled=false;tx($('#go'),'입장')}err(m.m);if($('#app').hidden)alert(m.m)}};
+  else if(m.t=='s')room(m);else if(m.t=='c')line(m);
+  else if(m.t=='e'){if($('#app').hidden){$('#go').disabled=false;tx($('#go'),'입장');alert(m.m)}else err(m.m)}};
  ws.onclose=()=>{if(!$('#app').hidden)err('연결이 끊겼어. 새로고침해줘.');else{$('#go').disabled=false;tx($('#go'),'입장')}}}
 $('#go').onclick=connect;$('#nm').onkeydown=e=>{if(e.key=='Enter'&&!e.isComposing)connect()};
-setInterval(()=>{if(S&&S.ph=='play'){const r=Math.max(0,dl-Date.now());$('#bi').style.width=Math.min(100,r/S.lim/10)+'%';tx($('#sec'),(r/1000).toFixed(1)+'초')}else if(S){$('#bi').style.width='0';tx($('#sec'),'')}},100);
+setInterval(()=>{if(!S||S.ph!='play')return;const el=S.run?Date.now()-r0:0,tl=S.tl-el,rl=S.rl-el;
+ $('#b1i').style.width=Math.max(0,Math.min(100,tl/S.tt*100))+'%';tx($('#b1t'),sec(tl));
+ $('#b2i').style.width=Math.max(0,Math.min(100,rl/(S.time*1000)*100))+'%';tx($('#b2t'),sec(rl))},100);
 </script></body></html>
