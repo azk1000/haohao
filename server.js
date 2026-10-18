@@ -71,7 +71,7 @@ function removeFromGame(R,id){
   R.cur=R.seq[R.turn];bcast(R);
 }
 function check(R,w){
-  if(!W.has(w))return'사전에 없는 단어야';
+  if(!W.has(w))return'#';
   if(R.chain.includes(w))return'이미 나온 단어야';
   if((R.manner||!R.chain.length)&&!hasNext(R,w[w.length-1],w))return R.chain.length?'한방 단어는 쓸 수 없어 (매너)':'이어갈 수 없는 단어는 첫 단어로 쓸 수 없어';
   return'';
@@ -141,7 +141,7 @@ wss.on('connection',ws=>{
       if(!(R.ph=='play'&&R.st=='turn'&&R.cur==u.id)||w.length<2||!R.need.includes(w[0])){
         if(w)say(R,{k:'u',n:u.name,m:w.slice(0,100)});return;
       }
-      const e=check(R,w);if(e)return err(e);
+      const e=check(R,w);if(e){send(ws,{t:'x',w,m:e=='#'?'':e});return}
       clearTimeout(R.tm);const t=Date.now()-R.ta;
       const sc=Math.round(preScore(w,R.chain,1-t/R.tt)*(R.dic[w]?15/(R.dic[w]+15):1));
       R.dic[w]=(R.dic[w]||0)+1;R.chain.push(w);R.cs.push(sc);R.rt-=t;R.sc[u.id]=(R.sc[u.id]||0)+sc;
