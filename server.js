@@ -72,8 +72,8 @@ function removeFromGame(R,id){
 }
 function check(R,w){
   if(!W.has(w))return'#';
-  if(R.chain.includes(w))return'이미 나온 단어야';
-  if((R.manner||!R.chain.length)&&!hasNext(R,w[w.length-1],w))return R.chain.length?'한방 단어는 쓸 수 없어 (매너)':'이어갈 수 없는 단어는 첫 단어로 쓸 수 없어';
+  if(R.chain.includes(w))return'#';
+  if((R.manner||!R.chain.length)&&!hasNext(R,w[w.length-1],w))return'#';
   return'';
 }
 function cfg(m,R){
@@ -81,7 +81,7 @@ function cfg(m,R){
     rounds:Math.min(10,Math.max(1,+m.rounds||5)),time:TIMES.includes(+m.time)?+m.time:60,manner:!!m.manner};
 }
 function enter(u,R){
-  if(R.players.size>=R.maxp)return send(u.ws,{t:'e',m:'방이 가득 찼어'});
+  if(R.players.size>=R.maxp)return send(u.ws,{t:'e',m:'방이 가득 찼습니다.'});
   u.room=R;R.players.set(u.id,u);send(u.ws,{t:'r'});
   say(R,{k:'a',m:u.name+'님이 입장했습니다.'});bcast(R);lobbyState();
 }
@@ -103,8 +103,8 @@ wss.on('connection',ws=>{
     let m;try{m=JSON.parse(raw)}catch{return}
     if(m.t=='hi'&&!u.name){
       const name=String(m.name||'').trim().slice(0,8);
-      if(!name)return err('닉네임을 써줘');
-      if([...users.values()].some(x=>x.name==name))return err('이미 쓰고 있는 닉네임이야');
+      if(!name)return;
+      if([...users.values()].some(x=>x.name==name))return err('이미 사용 중인 닉네임입니다.');
       u.name=name;users.set(u.id,u);send(ws,{t:'ok',you:u.id});
       lsay({k:'a',m:name+'님이 입장했습니다.'});lobbyState();return;
     }
@@ -114,8 +114,8 @@ wss.on('connection',ws=>{
       rooms.set(R.id,R);enter(u,R);return;
     }
     if(m.t=='jn'&&!u.room){
-      const R=rooms.get(+m.room);if(!R)return err('없어진 방이야');
-      if(R.pw&&R.pw!==String(m.pw||''))return err('비밀번호가 틀렸어');
+      const R=rooms.get(+m.room);if(!R)return err('없어진 방입니다.');
+      if(R.pw&&R.pw!==String(m.pw||''))return err('비밀번호가 틀렸습니다.');
       enter(u,R);return;
     }
     if(m.t=='lv'&&u.room){leave(u);send(ws,{t:'q'});lobbyState();return}
@@ -131,7 +131,7 @@ wss.on('connection',ws=>{
     }
     if(m.t=='start'){
       if(host(R)!=u.id||R.ph=='play')return;
-      if(R.players.size<2)return err('2명 이상 필요해');
+      if(R.players.size<2)return err('2명 이상 필요합니다.');
       R.seq=[...R.players.keys()].sort(()=>Math.random()-.5);R.turn=0;R.round=0;R.tw=pickTitle(R.rounds);
       R.nm={};R.sc={};for(const[i,p]of R.players){R.nm[i]=p.name;R.sc[i]=0}
       R.dic={};R.res='';R.ph='play';say(R,{k:'a',m:'게임을 시작합니다!'});lobbyState();roundReady(R);return;
@@ -141,7 +141,7 @@ wss.on('connection',ws=>{
       if(!(R.ph=='play'&&R.st=='turn'&&R.cur==u.id)||w.length<2||!R.need.includes(w[0])){
         if(w)say(R,{k:'u',n:u.name,m:w.slice(0,100)});return;
       }
-      const e=check(R,w);if(e){send(ws,{t:'x',w,m:e=='#'?'':e});return}
+      const e=check(R,w);if(e){send(ws,{t:'x',w});return}
       clearTimeout(R.tm);const t=Date.now()-R.ta;
       const sc=Math.round(preScore(w,R.chain,1-t/R.tt)*(R.dic[w]?15/(R.dic[w]+15):1));
       R.dic[w]=(R.dic[w]||0)+1;R.chain.push(w);R.cs.push(sc);R.rt-=t;R.sc[u.id]=(R.sc[u.id]||0)+sc;
