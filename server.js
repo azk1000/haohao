@@ -32,7 +32,7 @@ function bcast(R){
   const run=play&&R.st=='turn',el=now-R.ta;
   const tl=run?Math.max(0,R.tt-el):R.ftl,rl=run?Math.max(0,R.rt-el):R.frt;
   const hist=R.chain.slice(-5).reverse().map((w,i)=>({w,s:R.cs[R.chain.length-1-i]}));
-  for(const u of R.players.values())send(u.ws,{t:'s',you:u.id,id:R.id,title:R.title,lock:!!R.pw,pw:host(R)==u.id?R.pw:'',maxp:R.maxp,rounds:R.rounds,time:R.time,manner:R.manner,host:host(R),ph:R.ph,st:R.st,round:R.round,tw:R.tw,pl,cur:R.cur,last:R.last,need:R.need,chain:R.chain.length,hist,tl,tt:R.tt,rl,run,res:R.res});
+  for(const u of R.players.values())send(u.ws,{t:'s',you:u.id,id:R.id,title:R.title,lock:!!R.pw,pw:host(R)==u.id?R.pw:'',maxp:R.maxp,rounds:R.rounds,time:R.time,manner:R.manner,host:host(R),ph:R.ph,st:R.st,round:R.round,tw:R.tw,pl,cur:R.cur,last:R.last,need:R.need,chain:R.chain.length,hist,tl,tt:R.tt,rl,run});
 }
 function roundReady(R){
   clearTimeout(R.tm);R.round++;
@@ -57,10 +57,10 @@ function turnEnd(R){
 }
 function gameEnd(R){
   clearTimeout(R.tm);
-  const rk=Object.keys(R.nm).map(Number).sort((a,b)=>(R.sc[b]||0)-(R.sc[a]||0));
-  say(R,{k:'a',m:'게임이 끝났습니다!'});
-  rk.forEach((id,i)=>say(R,{k:'a',m:(i+1)+'위  '+R.nm[id]+(R.players.has(id)?'':' (퇴장)')+'  '+(R.sc[id]||0)+'점'}));
-  R.res=rk.length?'우승: '+R.nm[rk[0]]:'';R.ph='wait';R.st='';R.seq=[];bcast(R);lobbyState();
+  const ids=Object.keys(R.nm).map(Number).sort((x,y)=>(R.sc[y]||0)-(R.sc[x]||0));
+  const rk=[];ids.forEach((id,i)=>{const sc=R.sc[id]||0,pv=rk[i-1];rk.push({id,r:pv&&pv.sc==sc?pv.r:i+1,name:R.nm[id],sc,gone:!R.players.has(id)})});
+  R.ph='wait';R.st='';R.seq=[];bcast(R);lobbyState();
+  for(const u of R.players.values())send(u.ws,{t:'rs',rk,you:u.id});
 }
 function removeFromGame(R,id){
   const x=R.seq.indexOf(id);if(x<0)return;
@@ -110,7 +110,7 @@ wss.on('connection',ws=>{
     }
     if(!u.name)return;
     if(m.t=='mk'&&!u.room){
-      const R={id:++rid,title:String(m.title||'').trim().slice(0,16)||u.name+'님의 방',...cfg(m,null),players:new Map(),ph:'wait',st:'',res:'',seq:[],turn:0,round:0,tw:'',chain:[],cs:[],dic:{},need:[],last:'',rt:0,tt:0,ta:0,ftl:0,frt:0,cur:0,sc:{},nm:{},tm:null};
+      const R={id:++rid,title:String(m.title||'').trim().slice(0,16)||u.name+'님의 방',...cfg(m,null),players:new Map(),ph:'wait',st:'',seq:[],turn:0,round:0,tw:'',chain:[],cs:[],dic:{},need:[],last:'',rt:0,tt:0,ta:0,ftl:0,frt:0,cur:0,sc:{},nm:{},tm:null};
       rooms.set(R.id,R);enter(u,R);return;
     }
     if(m.t=='jn'&&!u.room){
@@ -134,7 +134,7 @@ wss.on('connection',ws=>{
       if(R.players.size<2)return err('2명 이상 필요합니다.');
       R.seq=[...R.players.keys()].sort(()=>Math.random()-.5);R.turn=0;R.round=0;R.tw=pickTitle(R.rounds);
       R.nm={};R.sc={};for(const[i,p]of R.players){R.nm[i]=p.name;R.sc[i]=0}
-      R.dic={};R.res='';R.ph='play';say(R,{k:'a',m:'게임을 시작합니다!'});lobbyState();roundReady(R);return;
+      R.dic={};R.ph='play';say(R,{k:'a',m:'게임을 시작합니다!'});lobbyState();roundReady(R);return;
     }
     if(m.t=='word'&&typeof m.w=='string'){
       const w=m.w.trim();

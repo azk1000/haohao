@@ -56,6 +56,9 @@ button.pr{background:var(--dk);color:#fff;border-color:var(--dk);cursor:pointer}
 .ln .n{color:#555;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ln .ts{color:#aaa;font-size:12px}
 .ln.a{background:#efefef}.ln.a .n{font-weight:700}.ln.g .m{font-weight:700}
 form#cf{display:flex;gap:8px;margin-top:6px}form#cf input,form#cf button{padding:6px 10px}form#cf input{flex:1}
+#res{z-index:40}.dlg.wide{width:min(100%,420px)}#rl{padding:10px 14px 2px;max-height:55vh;overflow:auto}
+.rr{display:grid;grid-template-columns:44px 1fr auto;gap:8px;align-items:center;background:#fff;border:1px solid var(--bd);border-radius:4px;padding:8px 12px;margin-bottom:6px}
+.rr span:first-child{text-align:center;font-weight:700}.rr.me{border-color:var(--dk);font-weight:700}
 #msg{z-index:50}#msg p{margin:0;padding:20px 22px 6px;line-height:1.6;font-size:14px}
 body{overflow:hidden}
 #login{position:fixed;inset:0;z-index:30;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:20px}
@@ -93,6 +96,7 @@ body{overflow:hidden}
 <form id="cf"><input id="ci" maxlength="100" autocomplete="off" placeholder="채팅"><button class="pr">전송</button></form></div>
 </div>
 <div class="ov" id="msg" hidden><div class="dlg"><h4><span>하오하오 안내메세지</span><button id="mx" type="button" aria-label="닫기">✕</button></h4><p id="mt"></p><button class="pr ok" id="mok" type="button">확인</button></div></div>
+<div class="ov" id="res" hidden><div class="dlg wide"><h4><span>게임 결과</span><button id="rx" type="button" aria-label="닫기">✕</button></h4><div id="rl"></div><button class="pr ok" id="rok" type="button">확인</button></div></div>
 <div class="ov" id="dlg" hidden><div class="dlg"><h4><span>방 설정</span><button id="dx" type="button" aria-label="닫기">✕</button></h4>
 <div class="fr"><label for="dt">방 제목</label><input id="dt" maxlength="16"></div>
 <div class="fr"><label for="dp">비밀번호</label><input id="dp" maxlength="8" autocomplete="off"></div>
@@ -110,7 +114,7 @@ function notice(text,cb){$('#mt').textContent=text;afterMsg=cb||null;$('#msg').h
 function closeMsg(){$('#msg').hidden=true;const f=afterMsg;afterMsg=null;if(f)f()}
 $('#mok').onclick=closeMsg;$('#mx').onclick=closeMsg;$('#msg').onclick=e=>{if(e.target.id=='msg')closeMsg()};
 const out=o=>ws&&ws.readyState==1&&ws.send(JSON.stringify(o));
-function view(r){inRoom=r;$('#lobby').hidden=r;$('#room').hidden=!r;$('#log').textContent='';S=null;$('#ci').placeholder='채팅'}
+function view(r){inRoom=r;$('#res').hidden=true;$('#lobby').hidden=r;$('#room').hidden=!r;$('#log').textContent='';S=null;$('#ci').placeholder='채팅'}
 function line(m){const d=mk('div','ln '+m.k),log=$('#log');
  d.append(mk('span','n',m.k=='a'?'알림':m.k=='g'?'단어 · '+m.n:m.n),mk('span','m',m.m),mk('span','ts',new Date().toLocaleTimeString('ko-KR')));
  const bot=log.scrollTop+log.clientHeight>=log.scrollHeight-30;log.append(d);if(bot)log.scrollTop=log.scrollHeight}
@@ -122,6 +126,8 @@ function lobby(l){tx($('#uc'),l.us.length);tx($('#rc'),l.rs.length);
   const i=mk('div');i.append(mk('b','',(r.lock?'🔒 ':'')+r.title),mk('small','',rule(r)));
   d.append(mk('div','no',r.id),i,mk('div','st',r.n+' / '+r.max+'\n'+(r.play?'진행중':'대기')));return d}))}
 const nm=id=>{const p=S&&S.pl.find(p=>p.id==id);return p?p.name:''};
+function results(m){$('#rl').replaceChildren(...m.rk.map(x=>{const d=mk('div','rr'+(x.id==m.you?' me':''));d.append(mk('span','',x.r),mk('span','',x.name+(x.gone?' (퇴장)':'')),mk('span','',x.sc+'점'));return d}));$('#res').hidden=false;$('#rok').focus()}
+const closeRes=()=>{$('#res').hidden=true};$('#rok').onclick=closeRes;$('#rx').onclick=closeRes;$('#res').onclick=e=>{if(e.target.id=='res')closeRes()};
 let badT;function bad(m){if(!S||S.ph!='play')return;const e=$('#tile');tx(e,m.w);e.classList.add('bad');e.classList.toggle('long',m.w.length>2);clearTimeout(badT);badT=setTimeout(()=>{e.classList.remove('bad','long');if(S&&S.ph=='play')tx(e,S.last?S.last.slice(-1):S.need[0]||'?')},1300)}
 const sec=ms=>(Math.max(0,ms)/1000).toFixed(1)+'초';
 function room(s){S=s;r0=Date.now();const play=s.ph=='play',mine=play&&s.st=='turn'&&s.cur==s.you,me=s.host==s.you;
@@ -136,7 +142,7 @@ function room(s){S=s;r0=Date.now();const play=s.ph=='play',mine=play&&s.st=='tur
   $('#hs').replaceChildren(...s.hist.map((h,i)=>{const e=mk('span','',h.w);e.append(mk('small','','+'+h.s));if(i)e.style.opacity='.6';return e}));
   tx($('#hint'),s.st=='ready'?'라운드 '+s.round+' 준비!':s.st=='over'?'시간 초과!':mine?'내 차례! 단어를 입력해주세요':nm(s.cur)+' 차례');
   tx($('#lw'),s.need.length?'「'+s.need.join(' / ')+'」(으)로 시작':'');
- }else{tx($('#hint'),s.res||'2명 이상 모이면 시작할 수 있어');tx($('#lw'),'')}
+ }else{tx($('#hint'),'2명 이상 모이면 시작할 수 있어');tx($('#lw'),'')}
  const hb=!me||play;$('#cfg').hidden=hb;$('#st').hidden=hb;
  $('#ci').placeholder=mine?'단어 입력 (내 차례)':'채팅'}
 function openDlg(mode){dmode=mode;const s=mode=='set'&&S;
@@ -145,7 +151,7 @@ function openDlg(mode){dmode=mode;const s=mode=='set'&&S;
 const closeDlg=()=>{$('#dlg').hidden=true};
 $('#dok').onclick=()=>{out({t:dmode,title:$('#dt').value,pw:$('#dp').value,maxp:$('#dn').value,rounds:$('#dr').value,time:$('#dm').value,manner:$('#dc').checked});closeDlg()};
 $('#dx').onclick=closeDlg;$('#dlg').onclick=e=>{if(e.target.id=='dlg')closeDlg()};
-document.onkeydown=e=>{if(e.key=='Escape'){if(!$('#msg').hidden)closeMsg();else closeDlg()}};
+document.onkeydown=e=>{if(e.key=='Escape'){if(!$('#msg').hidden)closeMsg();else if(!$('#res').hidden)closeRes();else closeDlg()}};
 $('#mk').onclick=()=>openDlg('mk');$('#cfg').onclick=()=>openDlg('set');
 $('#cf').onsubmit=e=>{e.preventDefault();const v=$('#ci').value.trim();if(!v)return;$('#ci').value='';
  if(inRoom&&S&&S.ph=='play'&&S.st=='turn'&&S.cur==S.you)out({t:'word',w:v});else out({t:'chat',m:v})};
@@ -156,7 +162,7 @@ function connect(){const n=$('#nm').value.trim();if(!n)return;$('#go').disabled=
  ws.onmessage=e=>{const m=JSON.parse(e.data);
   if(m.t=='ok'){const L=$('#login');$('#app').hidden=false;$('#app').classList.add('in');view(false);L.classList.add('out');setTimeout(()=>{L.hidden=true},950)}
   else if(m.t=='l'&&!inRoom)lobby(m);else if(m.t=='r')view(true);else if(m.t=='q')view(false);
-  else if(m.t=='x')bad(m);else if(m.t=='s')room(m);else if(m.t=='c')line(m);
+  else if(m.t=='x')bad(m);else if(m.t=='rs')results(m);else if(m.t=='s')room(m);else if(m.t=='c')line(m);
   else if(m.t=='e'){if($('#app').hidden){$('#go').disabled=false;tx($('#go'),'입장')}notice(m.m)}};
  ws.onclose=()=>{if(!$('#app').hidden)notice('연결이 끊겼습니다.',()=>location.reload());else{$('#go').disabled=false;tx($('#go'),'입장');notice('연결이 끊겼습니다.')}}}
 $('#go').onclick=connect;$('#nm').onkeydown=e=>{if(e.key=='Enter'&&!e.isComposing)connect()};
