@@ -1,17 +1,20 @@
 const http=require('http'),fs=require('fs'),path=require('path'),{WebSocketServer}=require('ws');
 const Y=[2,6,7,12,17,20],TIMES=[10,30,60,90,120,150];
-const W=new Set(fs.readFileSync(path.join(__dirname,'words.txt'),'utf8').split('\n').map(s=>s.trim()).filter(Boolean));
-const FIRST=new Map();for(const w of W){const c=w[0];if(!FIRST.has(c))FIRST.set(c,[]);FIRST.get(c).push(w)}
+const FL=new Map(),FIRST=new Map(),FIRSTI=new Map();
+for(const ln of fs.readFileSync(path.join(__dirname,'dict.txt'),'utf8').split('\n')){
+  if(!ln)continue;const i=ln.lastIndexOf('\t'),w=i<0?ln:ln.slice(0,i),f=i<0?0:+ln.slice(i+1);FL.set(w,f);
+  const M=f==2?FIRSTI:FIRST;if(!M.has(w[0]))M.set(w[0],[]);M.get(w[0]).push(w);
+}
 const alts=c=>{const n=c.charCodeAt(0)-44032;if(n<0||n>11171)return[c];const i=n/588|0,j=n%588/28|0,k=n%28;let t=i;if(i==5)t=Y.includes(j)?11:2;else if(i==2&&Y.includes(j))t=11;return t==i?[c]:[c,String.fromCharCode(44032+t*588+j*28+k)]};
 /* 끄투 원본 계산식 */
 const speed=rt=>rt<5000?10:rt<11000?9:rt<18000?8:rt<26000?7:rt<35000?6:rt<45000?5:rt<56000?4:rt<68000?3:rt<81000?2:rt<95000?1:0;
 const preScore=(w,chain,tr)=>2*(Math.pow(5+7*w.length,0.74)+0.88*chain.length)*(0.5+0.5*tr);
 const penalty=(chain,s)=>-Math.round(Math.min(10+chain.length*2.1+s*0.15,s));
-const hasNext=(R,c,ex)=>alts(c).some(a=>(FIRST.get(a)||[]).some(x=>x!=ex&&!R.chain.includes(x)));
+const hasNext=(R,c,ex)=>alts(c).some(a=>[FIRST.get(a),R.injeong&&FIRSTI.get(a)].some(L=>L&&L.some(x=>x!=ex&&!R.chain.includes(x))));
 function pickTitle(n){
   const ok=c=>/[가-힣]/.test(c)&&alts(c).some(a=>FIRST.has(a));
   if(n==1){const ks=[...FIRST.keys()].filter(ok);return ks[Math.random()*ks.length|0]}
-  const L=[...W].filter(w=>w.length==n&&[...w].every(ok));
+  const L=[...FL].filter(([w,f])=>f==0&&w.length==n&&[...w].every(ok)).map(x=>x[0]);
   return L.length?L[Math.random()*L.length|0]:'가나다라마바사아자차'.slice(0,n);
 }
 const users=new Map(),rooms=new Map();let uid=0,rid=900;
@@ -21,7 +24,7 @@ const lsay=o=>{for(const u of users.values())if(!u.room)send(u.ws,{t:'c',...o})}
 const say=(R,o)=>{for(const u of R.players.values())send(u.ws,{t:'c',...o})};
 function lobbyState(){
   const us=[...users.values()].map(u=>({name:u.name,room:u.room?u.room.id:0}));
-  const rs=[...rooms.values()].map(R=>({id:R.id,title:R.title,n:R.players.size,max:R.maxp,play:R.ph=='play',lock:!!R.pw,rounds:R.rounds,time:R.time,manner:R.manner}));
+  const rs=[...rooms.values()].map(R=>({id:R.id,title:R.title,n:R.players.size,max:R.maxp,play:R.ph=='play',lock:!!R.pw,rounds:R.rounds,time:R.time,manner:R.manner,injeong:R.injeong}));
   for(const u of users.values())if(!u.room)send(u.ws,{t:'l',us,rs});
 }
 function bcast(R){
@@ -32,7 +35,7 @@ function bcast(R){
   const run=play&&R.st=='turn',el=now-R.ta;
   const tl=run?Math.max(0,R.tt-el):R.ftl,rl=run?Math.max(0,R.rt-el):R.frt;
   const hist=R.chain.slice(-5).reverse().map((w,i)=>({w,s:R.cs[R.chain.length-1-i]}));
-  for(const u of R.players.values())send(u.ws,{t:'s',you:u.id,id:R.id,title:R.title,lock:!!R.pw,pw:host(R)==u.id?R.pw:'',maxp:R.maxp,rounds:R.rounds,time:R.time,manner:R.manner,host:host(R),ph:R.ph,st:R.st,round:R.round,tw:R.tw,pl,cur:R.cur,last:R.last,need:R.need,chain:R.chain.length,hist,tl,tt:R.tt,rl,run});
+  for(const u of R.players.values())send(u.ws,{t:'s',you:u.id,id:R.id,title:R.title,lock:!!R.pw,pw:host(R)==u.id?R.pw:'',maxp:R.maxp,rounds:R.rounds,time:R.time,manner:R.manner,injeong:R.injeong,host:host(R),ph:R.ph,st:R.st,round:R.round,tw:R.tw,pl,cur:R.cur,last:R.last,need:R.need,chain:R.chain.length,hist,tl,tt:R.tt,rl,run});
 }
 function roundReady(R){
   clearTimeout(R.tm);R.round++;
@@ -71,14 +74,15 @@ function removeFromGame(R,id){
   R.cur=R.seq[R.turn];bcast(R);
 }
 function check(R,w){
-  if(!W.has(w))return'#';
+  const f=FL.get(w);
+  if(f===undefined||(f==2&&!R.injeong))return'#';
   if(R.chain.includes(w))return'#';
   if((R.manner||!R.chain.length)&&!hasNext(R,w[w.length-1],w))return'#';
   return'';
 }
 function cfg(m,R){
   return{pw:String(m.pw||'').slice(0,8),maxp:Math.min(8,Math.max(R?R.players.size:2,2,+m.maxp||8)),
-    rounds:Math.min(10,Math.max(1,+m.rounds||5)),time:TIMES.includes(+m.time)?+m.time:60,manner:!!m.manner};
+    rounds:Math.min(10,Math.max(1,+m.rounds||5)),time:TIMES.includes(+m.time)?+m.time:60,manner:!!m.manner,injeong:!!m.injeong};
 }
 function enter(u,R){
   if(R.players.size>=R.maxp)return send(u.ws,{t:'e',m:'방이 가득 찼습니다.'});
@@ -156,4 +160,4 @@ wss.on('connection',ws=>{
   });
 });
 setInterval(()=>{wss.clients.forEach(c=>{if(!c.isAlive)return c.terminate();c.isAlive=false;c.ping()})},25000);
-srv.listen(process.env.PORT||3000,()=>console.log('하오하오 서버 시작, 단어 '+W.size+'개'));
+srv.listen(process.env.PORT||3000,()=>console.log('하오하오 서버 시작, 단어 '+FL.size+'개'));

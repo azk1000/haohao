@@ -77,7 +77,7 @@ body{overflow:hidden}
 .dlg h4{margin:0;padding:8px 14px;background:var(--hd);border-radius:10px 10px 0 0;display:flex;justify-content:space-between;font-size:14px}
 .dlg h4 button{border:0;background:none;padding:0 4px;cursor:pointer;font-size:16px}
 .fr{display:grid;grid-template-columns:96px 1fr;gap:10px;align-items:center;padding:6px 18px}.fr label{text-align:right;font-size:14px}
-.fr input[type=checkbox]{width:18px;height:18px;padding:0}
+.cb{display:flex;gap:18px}.cb span{display:flex;align-items:center;gap:6px}.fr input[type=checkbox]{width:18px;height:18px;padding:0}
 .dlg .ok{display:block;margin:12px auto 0;width:120px}
 @media(max-width:700px){.grid{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) minmax(0,2fr)}}
 </style></head><body><main>
@@ -103,7 +103,7 @@ body{overflow:hidden}
 <div class="fr"><label for="dn">플레이어 수</label><input id="dn" type="number" min="2" max="8"></div>
 <div class="fr"><label for="dr">라운드 수</label><input id="dr" type="number" min="1" max="10"></div>
 <div class="fr"><label for="dm">라운드 시간</label><select id="dm"><option value="10">10초</option><option value="30">30초</option><option value="60">60초</option><option value="90">90초</option><option value="120">120초</option><option value="150">150초</option></select></div>
-<div class="fr"><label for="dc">특수 규칙</label><span><input id="dc" type="checkbox"> 매너</span></div>
+<div class="fr"><label for="dc">특수 규칙</label><span class="cb"><span><input id="dc" type="checkbox"> 매너</span><span><input id="di" type="checkbox"> 어인정</span></span></div>
 <button class="pr ok" id="dok" type="button">확인</button></div></div>
 <script>
 const $=s=>document.querySelector(s);let ws,S=null,r0=0,inRoom=false,erT,dmode='mk';
@@ -118,7 +118,7 @@ function view(r){inRoom=r;$('#res').hidden=true;$('#lobby').hidden=r;$('#room').
 function line(m){const d=mk('div','ln '+m.k),log=$('#log');
  d.append(mk('span','n',m.k=='a'?'알림':m.k=='g'?'단어 · '+m.n:m.n),mk('span','m',m.m),mk('span','ts',new Date().toLocaleTimeString('ko-KR')));
  const bot=log.scrollTop+log.clientHeight>=log.scrollHeight-30;log.append(d);if(bot)log.scrollTop=log.scrollHeight}
-const rule=o=>'한국어 끝말잇기 · 라운드 '+o.rounds+' · '+o.time+'초'+(o.manner?' · 매너':'');
+const rule=o=>'한국어 끝말잇기 · 라운드 '+o.rounds+' · '+o.time+'초'+(o.manner?' · 매너':'')+(o.injeong?' · 어인정':'');
 function lobby(l){tx($('#uc'),l.us.length);tx($('#rc'),l.rs.length);
  $('#us').replaceChildren(...l.us.map(u=>mk('div','',u.name+(u.room?' (방 '+u.room+')':''))));
  $('#rs').replaceChildren(...l.rs.map(r=>{const d=mk('div','rm'+(r.play?' pl':''));
@@ -146,10 +146,10 @@ function room(s){S=s;r0=Date.now();const play=s.ph=='play',mine=play&&s.st=='tur
  const hb=!me||play;$('#cfg').hidden=hb;$('#st').hidden=hb;
  $('#ci').placeholder=mine?'단어 입력 (내 차례)':'채팅'}
 function openDlg(mode){dmode=mode;const s=mode=='set'&&S;
- $('#dt').value=s?S.title:'';$('#dp').value=s?S.pw:'';$('#dn').value=s?S.maxp:8;$('#dr').value=s?S.rounds:5;$('#dm').value=s?S.time:60;$('#dc').checked=s?S.manner:false;
+ $('#dt').value=s?S.title:'';$('#dp').value=s?S.pw:'';$('#dn').value=s?S.maxp:8;$('#dr').value=s?S.rounds:5;$('#dm').value=s?S.time:60;$('#dc').checked=s?S.manner:false;$('#di').checked=s?S.injeong:false;
  $('#dlg').hidden=false;$('#dt').focus()}
 const closeDlg=()=>{$('#dlg').hidden=true};
-$('#dok').onclick=()=>{out({t:dmode,title:$('#dt').value,pw:$('#dp').value,maxp:$('#dn').value,rounds:$('#dr').value,time:$('#dm').value,manner:$('#dc').checked});closeDlg()};
+$('#dok').onclick=()=>{out({t:dmode,title:$('#dt').value,pw:$('#dp').value,maxp:$('#dn').value,rounds:$('#dr').value,time:$('#dm').value,manner:$('#dc').checked,injeong:$('#di').checked});closeDlg()};
 $('#dx').onclick=closeDlg;$('#dlg').onclick=e=>{if(e.target.id=='dlg')closeDlg()};
 document.onkeydown=e=>{if(e.key=='Escape'){if(!$('#msg').hidden)closeMsg();else if(!$('#res').hidden)closeRes();else closeDlg()}};
 $('#mk').onclick=()=>openDlg('mk');$('#cfg').onclick=()=>openDlg('set');
