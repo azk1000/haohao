@@ -97,6 +97,18 @@ function leave(u){
 }
 const srv=http.createServer((q,r)=>{
   if(q.url=='/'||q.url.startsWith('/?')){r.writeHead(200,{'content-type':'text/html; charset=utf-8'});r.end(fs.readFileSync(path.join(__dirname,'index.html')))}
+  else if(q.url.split('?')[0]=='/Lobby_bgm.mp3'){
+    const f=path.join(__dirname,'Lobby_bgm.mp3');
+    fs.stat(f,(e,st)=>{
+      if(e){r.writeHead(404);r.end();return}
+      const m=/bytes=(\d*)-(\d*)/.exec(q.headers.range||'');let a=0,b=st.size-1,code=200;
+      if(m){code=206;if(!m[1]&&m[2]){a=Math.max(0,st.size-+m[2])}else{a=m[1]?+m[1]:0;if(m[2])b=Math.min(+m[2],st.size-1)}
+        if(a>b||a>=st.size){r.writeHead(416,{'content-range':'bytes */'+st.size});r.end();return}}
+      const h={'content-type':'audio/mpeg','accept-ranges':'bytes','content-length':b-a+1,'cache-control':'public, max-age=3600'};
+      if(code==206)h['content-range']='bytes '+a+'-'+b+'/'+st.size;
+      r.writeHead(code,h);fs.createReadStream(f,{start:a,end:b}).pipe(r);
+    });
+  }
   else{r.writeHead(404);r.end()}
 });
 const wss=new WebSocketServer({server:srv});
