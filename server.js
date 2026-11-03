@@ -35,7 +35,7 @@ function bcast(R){
   const run=play&&R.st=='turn',el=now-R.ta;
   const tl=run?Math.max(0,R.tt-el):R.ftl,rl=run?Math.max(0,R.rt-el):R.frt;
   const hist=R.chain.slice(-5).reverse().map((w,i)=>({w,s:R.cs[R.chain.length-1-i]}));
-  for(const u of R.players.values())send(u.ws,{t:'s',you:u.id,id:R.id,title:R.title,lock:!!R.pw,pw:host(R)==u.id?R.pw:'',maxp:R.maxp,rounds:R.rounds,time:R.time,manner:R.manner,injeong:R.injeong,host:host(R),ph:R.ph,st:R.st,round:R.round,tw:R.tw,pl,cur:R.cur,last:R.last,need:R.need,chain:R.chain.length,hist,tl,tt:R.tt,rl,run});
+  for(const u of R.players.values())send(u.ws,{t:'s',you:u.id,id:R.id,title:R.title,lock:!!R.pw,pw:host(R)==u.id?R.pw:'',maxp:R.maxp,rounds:R.rounds,time:R.time,manner:R.manner,injeong:R.injeong,host:host(R),ph:R.ph,st:R.st,round:R.round,tw:R.tw,pl,cur:R.cur,last:R.last,need:R.need,tn:R.tn,chain:R.chain.length,hist,tl,tt:R.tt,rl,run});
 }
 function roundReady(R){
   clearTimeout(R.tm);R.round++;
@@ -48,7 +48,7 @@ function roundReady(R){
 function turnStart(R){
   clearTimeout(R.tm);
   R.rt=Math.min(R.rt,Math.max(10000,150000-R.chain.length*1500));
-  R.tt=15000-1400*speed(R.rt);R.ta=Date.now();R.st='turn';R.cur=R.seq[R.turn];
+  R.tt=15000-1400*speed(R.rt);R.ta=Date.now();R.tn++;R.st='turn';R.cur=R.seq[R.turn];
   bcast(R);R.tm=setTimeout(()=>turnEnd(R),Math.min(R.rt,R.tt+100));
 }
 function turnEnd(R){
@@ -95,20 +95,21 @@ function leave(u){
   if(!R.players.size){clearTimeout(R.tm);rooms.delete(R.id)}
   else{say(R,{k:'a',m:u.name+'님이 퇴장했습니다.'});if(R.ph=='play')removeFromGame(R,u.id);else bcast(R)}
 }
+function sendFile(q,r,f){
+  fs.stat(f,(e,st)=>{
+    if(e||!st.isFile()){r.writeHead(404);r.end();return}
+    const m=/bytes=(\d*)-(\d*)/.exec(q.headers.range||'');let a=0,b=st.size-1,code=200;
+    if(m){code=206;if(!m[1]&&m[2]){a=Math.max(0,st.size-+m[2])}else{a=m[1]?+m[1]:0;if(m[2])b=Math.min(+m[2],st.size-1)}
+      if(a>b||a>=st.size){r.writeHead(416,{'content-range':'bytes */'+st.size});r.end();return}}
+    const h={'content-type':'audio/mpeg','accept-ranges':'bytes','content-length':b-a+1,'cache-control':'public, max-age=3600'};
+    if(code==206)h['content-range']='bytes '+a+'-'+b+'/'+st.size;
+    r.writeHead(code,h);fs.createReadStream(f,{start:a,end:b}).pipe(r);
+  });
+}
 const srv=http.createServer((q,r)=>{
   if(q.url=='/'||q.url.startsWith('/?')){r.writeHead(200,{'content-type':'text/html; charset=utf-8'});r.end(fs.readFileSync(path.join(__dirname,'index.html')))}
-  else if(q.url.split('?')[0]=='/Lobby_bgm.mp3'){
-    const f=path.join(__dirname,'Lobby_bgm.mp3');
-    fs.stat(f,(e,st)=>{
-      if(e){r.writeHead(404);r.end();return}
-      const m=/bytes=(\d*)-(\d*)/.exec(q.headers.range||'');let a=0,b=st.size-1,code=200;
-      if(m){code=206;if(!m[1]&&m[2]){a=Math.max(0,st.size-+m[2])}else{a=m[1]?+m[1]:0;if(m[2])b=Math.min(+m[2],st.size-1)}
-        if(a>b||a>=st.size){r.writeHead(416,{'content-range':'bytes */'+st.size});r.end();return}}
-      const h={'content-type':'audio/mpeg','accept-ranges':'bytes','content-length':b-a+1,'cache-control':'public, max-age=3600'};
-      if(code==206)h['content-range']='bytes '+a+'-'+b+'/'+st.size;
-      r.writeHead(code,h);fs.createReadStream(f,{start:a,end:b}).pipe(r);
-    });
-  }
+  else if(q.url.split('?')[0]=='/Lobby_bgm.mp3')sendFile(q,r,path.join(__dirname,'Lobby_bgm.mp3'));
+  else if(/^\/sfx\/[A-Za-z0-9_]{1,20}\.mp3(\?.*)?$/.test(q.url))sendFile(q,r,path.join(__dirname,'sfx',q.url.split('?')[0].slice(5)));
   else{r.writeHead(404);r.end()}
 });
 const wss=new WebSocketServer({server:srv});
@@ -126,7 +127,7 @@ wss.on('connection',ws=>{
     }
     if(!u.name)return;
     if(m.t=='mk'&&!u.room){
-      const R={id:++rid,title:String(m.title||'').trim().slice(0,16)||u.name+'님의 방',...cfg(m,null),players:new Map(),ph:'wait',st:'',seq:[],turn:0,round:0,tw:'',chain:[],cs:[],dic:{},need:[],last:'',rt:0,tt:0,ta:0,ftl:0,frt:0,cur:0,sc:{},nm:{},tm:null};
+      const R={id:++rid,title:String(m.title||'').trim().slice(0,16)||u.name+'님의 방',...cfg(m,null),players:new Map(),ph:'wait',st:'',seq:[],turn:0,round:0,tw:'',chain:[],cs:[],dic:{},need:[],last:'',rt:0,tt:0,ta:0,tn:0,ftl:0,frt:0,cur:0,sc:{},nm:{},tm:null};
       rooms.set(R.id,R);enter(u,R);return;
     }
     if(m.t=='jn'&&!u.room){

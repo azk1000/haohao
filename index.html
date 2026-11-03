@@ -60,8 +60,10 @@ form#cf{display:flex;gap:8px;margin-top:6px}form#cf input,form#cf button{padding
 .rr{display:grid;grid-template-columns:44px 1fr auto;gap:8px;align-items:center;background:#fff;border:1px solid var(--bd);border-radius:4px;padding:8px 12px;margin-bottom:6px}
 .rr span:first-child{text-align:center;font-weight:700}.rr.me{border-color:var(--dk);font-weight:700}
 .tab.ic{padding:8px 12px}
-#vp{position:fixed;z-index:35;background:#fff;border:1px solid var(--bd);border-radius:10px;padding:10px 14px;box-shadow:0 6px 20px rgba(0,0,0,.2);display:flex;align-items:center;gap:10px;font-size:14px}
+#vp{position:fixed;z-index:35;background:#fff;border:1px solid var(--bd);border-radius:10px;padding:10px 14px;box-shadow:0 6px 20px rgba(0,0,0,.2);display:flex;flex-direction:column;gap:8px;font-size:14px}
+.vrow{display:flex;align-items:center;gap:10px}.vrow label{width:60px}
 #vp input{width:140px;padding:0;border:0;accent-color:#222}#vp span{width:34px;text-align:right;color:#555}
+.cr{font-size:11px;color:#888}.cr a{color:#555}
 #room.rising>.pn{overflow:hidden}#stage.rise{animation:up .65s cubic-bezier(.16,1,.3,1) backwards}
 #msg{z-index:50}#msg p{margin:0;padding:20px 22px 6px;line-height:1.6;font-size:14px}
 body{overflow:hidden}
@@ -100,7 +102,7 @@ body{overflow:hidden}
 <form id="cf"><input id="ci" maxlength="100" autocomplete="off" placeholder="채팅"><button class="pr">전송</button></form></div>
 </div>
 <audio id="bgm" src="Lobby_bgm.mp3" loop preload="auto"></audio>
-<div id="vp" hidden><label for="vr">배경음악</label><input id="vr" type="range" min="0" max="100" step="1"><span id="vv"></span></div>
+<div id="vp" hidden><div class="vrow"><label for="vr">배경음악</label><input id="vr" type="range" min="0" max="100" step="1"><span id="vv"></span></div><div class="vrow"><label for="vs">효과음</label><input id="vs" type="range" min="0" max="100" step="1"><span id="vsv"></span></div><div class="cr">효과음: <a href="https://github.com/JJoriping/KKuTu" target="_blank" rel="noopener">끄투(JJoriping)</a> · CC BY 4.0</div></div>
 <div class="ov" id="msg" hidden><div class="dlg"><h4><span>하오하오 안내메세지</span><button id="mx" type="button" aria-label="닫기">✕</button></h4><p id="mt"></p><button class="pr ok" id="mok" type="button">확인</button></div></div>
 <div class="ov" id="res" hidden><div class="dlg wide"><h4><span>게임 결과</span><button id="rx" type="button" aria-label="닫기">✕</button></h4><div id="rl"></div><button class="pr ok" id="rok" type="button">확인</button></div></div>
 <div class="ov" id="dlg" hidden><div class="dlg"><h4><span>방 설정</span><button id="dx" type="button" aria-label="닫기">✕</button></h4>
@@ -120,6 +122,30 @@ function notice(text,cb){$('#mt').textContent=text;afterMsg=cb||null;$('#msg').h
 function closeMsg(){$('#msg').hidden=true;const f=afterMsg;afterMsg=null;if(f)f()}
 $('#mok').onclick=closeMsg;$('#mx').onclick=closeMsg;$('#msg').onclick=e=>{if(e.target.id=='msg')closeMsg()};
 const out=o=>ws&&ws.readyState==1&&ws.send(JSON.stringify(o));
+const NAMES=['Al','game_start','round_start','timeout','fail'];for(let i=0;i<=10;i++)NAMES.push('T'+i,'As'+i,'K'+i);
+const BEAT=[null,'10000000','10001000','10010010','10011010','11011010','11011110','11011111','11111111'];
+let AC=null,SG=null,BUF={},tSrc=null,revT=[],sn={play:false,st:'',tn:-1,chain:0,round:0},sv=.7;
+try{const v=localStorage.getItem('hh_sfx');if(v!==null&&v!==''&&!isNaN(+v))sv=Math.min(1,Math.max(0,+v))}catch(e){}
+function initSfx(){if(AC){if(AC.state=='suspended')AC.resume();return}
+ try{AC=new(window.AudioContext||window.webkitAudioContext)();SG=AC.createGain();SG.gain.value=sv;SG.connect(AC.destination)}catch(e){AC=null;return}
+ NAMES.forEach(n=>fetch('sfx/'+n+'.mp3').then(r=>r.arrayBuffer()).then(b=>AC.decodeAudioData(b)).then(d=>{BUF[n]=d}).catch(()=>{}))}
+function sfx(n,off){const b=BUF[n];if(!AC||!b)return null;const s=AC.createBufferSource();s.buffer=b;s.connect(SG);try{s.start(0,Math.max(0,Math.min(off||0,b.duration||0)))}catch(e){return null}return s}
+function stopT(){if(tSrc){try{tSrc.stop()}catch(e){}tSrc=null}}
+function clearRev(){revT.forEach(clearTimeout);revT=[]}
+function reveal(w,sp){clearRev();const tt=S.tt,tick=tt/96,sg=tt/12,len=w.length,b=BEAT[len],e=$('#tile');
+ e.classList.add('long');e.textContent='';
+ if(b){let j=0;for(let i=0;i<b.length;i++)if(b[i]=='1'){const k=++j;revT.push(setTimeout(()=>{e.textContent=w.slice(0,k);sfx('As'+sp)},i*tick))}}
+ else for(let i=0;i<len;i++)revT.push(setTimeout(()=>{e.textContent=w.slice(0,i+1);sfx('Al')},i*sg/len));
+ revT.push(setTimeout(()=>sfx('K'+sp),sg))}
+function sound(s){
+ if(s.ph!='play'){stopT();clearRev();sn={play:false,st:'',tn:-1,chain:0,round:0};return}
+ const sp=Math.max(0,Math.min(10,Math.round((15000-s.tt)/1400)));
+ if(!sn.play)sfx(s.round>1?'round_start':'game_start');else if(s.round!=sn.round)sfx('round_start');
+ if(s.st!='turn')stopT();else if(s.tn!=sn.tn){stopT();tSrc=sfx('T'+sp,(s.tt-s.tl)/1000);sn.tn=s.tn}
+ if(s.st=='over'&&sn.st!='over')sfx('timeout');
+ if(s.st=='pause'&&s.chain>sn.chain&&s.last)reveal(s.last,sp);
+ if(s.st!='pause')clearRev();
+ sn.play=true;sn.st=s.st;sn.round=s.round;sn.chain=s.chain}
 let prevPlay=false,riseT;
 const bgm=$('#bgm');let vol=.4;try{const v=localStorage.getItem('hh_vol');if(v!==null&&v!==''&&!isNaN(+v))vol=Math.min(1,Math.max(0,+v))}catch(e){}
 bgm.volume=vol;
@@ -127,10 +153,11 @@ function tryPlay(){const p=bgm.play();if(p&&p.catch)p.catch(()=>{addEventListene
 const wantBgm=()=>!$('#app').hidden&&!(S&&S.ph=='play');
 function bgmSync(){const w=wantBgm();if(w&&bgm.paused)tryPlay();else if(!w&&!bgm.paused)bgm.pause()}
 function rise(){const st=$('#stage'),rm=$('#room');clearTimeout(riseT);rm.classList.add('rising');st.classList.remove('rise');void st.offsetWidth;st.classList.add('rise');riseT=setTimeout(()=>{st.classList.remove('rise');rm.classList.remove('rising')},800)}
-document.querySelectorAll('.gear').forEach(b=>b.onclick=e=>{e.stopPropagation();const p=$('#vp');if(!p.hidden){p.hidden=true;return}const r=b.getBoundingClientRect(),v=Math.round(vol*100);$('#vr').value=v;tx($('#vv'),v);p.hidden=false;p.style.top=(r.bottom+4)+'px';p.style.left=Math.max(6,Math.min(r.left,innerWidth-p.offsetWidth-6))+'px'});
+document.querySelectorAll('.gear').forEach(b=>b.onclick=e=>{e.stopPropagation();const p=$('#vp');if(!p.hidden){p.hidden=true;return}const r=b.getBoundingClientRect(),v=Math.round(vol*100);$('#vr').value=v;tx($('#vv'),v);const w=Math.round(sv*100);$('#vs').value=w;tx($('#vsv'),w);p.hidden=false;p.style.top=(r.bottom+4)+'px';p.style.left=Math.max(6,Math.min(r.left,innerWidth-p.offsetWidth-6))+'px'});
 $('#vr').oninput=e=>{vol=e.target.value/100;bgm.volume=vol;tx($('#vv'),e.target.value);try{localStorage.setItem('hh_vol',vol)}catch(x){}};
+$('#vs').oninput=e=>{sv=e.target.value/100;if(SG)SG.gain.value=sv;tx($('#vsv'),e.target.value);try{localStorage.setItem('hh_sfx',sv)}catch(x){}};
 document.addEventListener('click',e=>{if(!e.target.closest('#vp'))$('#vp').hidden=true});
-function view(r){inRoom=r;$('#res').hidden=true;$('#lobby').hidden=r;$('#room').hidden=!r;$('#log').textContent='';S=null;prevPlay=false;$('#ci').placeholder='채팅';bgmSync()}
+function view(r){inRoom=r;$('#res').hidden=true;$('#lobby').hidden=r;$('#room').hidden=!r;$('#log').textContent='';S=null;prevPlay=false;$('#ci').placeholder='채팅';bgmSync();stopT();clearRev();sn={play:false,st:'',tn:-1,chain:0,round:0}}
 function line(m){const d=mk('div','ln '+m.k),log=$('#log');
  d.append(mk('span','n',m.k=='a'?'알림':m.k=='g'?'단어 · '+m.n:m.n),mk('span','m',m.m),mk('span','ts',new Date().toLocaleTimeString('ko-KR')));
  const bot=log.scrollTop+log.clientHeight>=log.scrollHeight-30;log.append(d);if(bot)log.scrollTop=log.scrollHeight}
@@ -144,10 +171,10 @@ function lobby(l){tx($('#uc'),l.us.length);tx($('#rc'),l.rs.length);
 const nm=id=>{const p=S&&S.pl.find(p=>p.id==id);return p?p.name:''};
 function results(m){$('#rl').replaceChildren(...m.rk.map(x=>{const d=mk('div','rr'+(x.id==m.you?' me':''));d.append(mk('span','',x.r),mk('span','',x.name+(x.gone?' (퇴장)':'')),mk('span','',x.sc+'점'));return d}));$('#res').hidden=false;$('#rok').focus()}
 const closeRes=()=>{$('#res').hidden=true};$('#rok').onclick=closeRes;$('#rx').onclick=closeRes;$('#res').onclick=e=>{if(e.target.id=='res')closeRes()};
-let badT;function bad(m){if(!S||S.ph!='play')return;const e=$('#tile');tx(e,m.w);e.classList.add('bad');e.classList.toggle('long',m.w.length>2);clearTimeout(badT);badT=setTimeout(()=>{e.classList.remove('bad','long');if(S&&S.ph=='play')tx(e,S.last?S.last.slice(-1):S.need[0]||'?')},1300)}
+let badT;function bad(m){if(!S||S.ph!='play')return;sfx('fail');const e=$('#tile');tx(e,m.w);e.classList.add('bad');e.classList.toggle('long',m.w.length>2);clearTimeout(badT);badT=setTimeout(()=>{e.classList.remove('bad','long');if(S&&S.ph=='play')tx(e,S.last?S.last.slice(-1):S.need[0]||'?')},1300)}
 const sec=ms=>(Math.max(0,ms)/1000).toFixed(1)+'초';
 function room(s){S=s;r0=Date.now();const play=s.ph=='play',mine=play&&s.st=='turn'&&s.cur==s.you,me=s.host==s.you;
- {const pl=s.ph=='play';if(pl&&!prevPlay)rise();prevPlay=pl}bgmSync();
+ sound(s);{const pl=s.ph=='play';if(pl&&!prevPlay)rise();prevPlay=pl}bgmSync();
  tx($('#ti'),'['+s.id+'] '+s.title);tx($('#ri'),rule(s)+' · 참여자 '+s.pl.length+' / '+s.maxp);
  $('#stage').classList.toggle('on',play);$('#top').hidden=!play;$('#hs').hidden=!play;
  $('#cs').replaceChildren(...s.pl.map(p=>{const d=mk('div','cd'+(play&&s.cur==p.id?' cur':'')+(p.alive?'':' out'));
@@ -155,7 +182,7 @@ function room(s){S=s;r0=Date.now();const play=s.ph=='play',mine=play&&s.st=='tur
   if(play&&!p.spec)d.append(mk('em','',String(Math.max(0,p.sc)).padStart(5,'0')));if(p.spec)d.append(mk('small','','관전'));return d}));
  if(play){
   $('#pw').replaceChildren(...s.tw.split('').map((c,i)=>i==s.round-1?mk('u','',c):document.createTextNode(c)));
-  tx($('#tile'),s.last?s.last.slice(-1):s.need[0]||'?');tx($('#cn'),s.chain);
+  if(!(s.st=='pause'&&revT.length)){tx($('#tile'),s.last?s.last.slice(-1):s.need[0]||'?');$('#tile').classList.remove('long')}tx($('#cn'),s.chain);
   $('#hs').replaceChildren(...s.hist.map((h,i)=>{const e=mk('span','',h.w);e.append(mk('small','','+'+h.s));if(i)e.style.opacity='.6';return e}));
   tx($('#hint'),s.st=='ready'?'라운드 '+s.round+' 준비!':s.st=='over'?'시간 초과!':mine?'내 차례! 단어를 입력해주세요':nm(s.cur)+' 차례');
   tx($('#lw'),s.need.length?'「'+s.need.join(' / ')+'」(으)로 시작':'');
@@ -173,11 +200,11 @@ $('#mk').onclick=()=>openDlg('mk');$('#cfg').onclick=()=>openDlg('set');
 $('#cf').onsubmit=e=>{e.preventDefault();const v=$('#ci').value.trim();if(!v)return;$('#ci').value='';
  if(inRoom&&S&&S.ph=='play'&&S.st=='turn'&&S.cur==S.you)out({t:'word',w:v});else out({t:'chat',m:v})};
 $('#st').onclick=()=>out({t:'start'});$('#lv').onclick=()=>out({t:'lv'});
-function connect(){const n=$('#nm').value.trim();if(!n)return;$('#go').disabled=true;tx($('#go'),'접속 중...');bgm.muted=true;tryPlay();
+function connect(){const n=$('#nm').value.trim();if(!n)return;$('#go').disabled=true;tx($('#go'),'접속 중...');bgm.muted=true;tryPlay();initSfx();
  ws=new WebSocket((location.protocol=='https:'?'wss://':'ws://')+location.host);
  ws.onopen=()=>out({t:'hi',name:n});
  ws.onmessage=e=>{const m=JSON.parse(e.data);
-  if(m.t=='ok'){const L=$('#login');bgm.muted=false;bgm.currentTime=0;$('#app').hidden=false;$('#app').classList.add('in');view(false);L.classList.add('out');setTimeout(()=>{L.hidden=true},950)}
+  if(m.t=='ok'){const L=$('#login');bgm.muted=false;bgm.currentTime=0;if(AC&&AC.state=='suspended')AC.resume();$('#app').hidden=false;$('#app').classList.add('in');view(false);L.classList.add('out');setTimeout(()=>{L.hidden=true},950)}
   else if(m.t=='l'&&!inRoom)lobby(m);else if(m.t=='r')view(true);else if(m.t=='q')view(false);
   else if(m.t=='x')bad(m);else if(m.t=='rs')results(m);else if(m.t=='s')room(m);else if(m.t=='c')line(m);
   else if(m.t=='e'){if($('#app').hidden){$('#go').disabled=false;tx($('#go'),'입장');bgm.pause();bgm.muted=false}notice(m.m)}};
