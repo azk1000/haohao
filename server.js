@@ -151,7 +151,8 @@ wss.on('connection',ws=>{
       if(R.players.size<2)return err('2명 이상 필요합니다.');
       R.seq=[...R.players.keys()].sort(()=>Math.random()-.5);R.turn=0;R.round=0;R.tw=pickTitle(R.rounds);
       R.nm={};R.sc={};for(const[i,p]of R.players){R.nm[i]=p.name;R.sc[i]=0}
-      R.dic={};R.ph='play';say(R,{k:'a',m:'게임을 시작합니다!'});lobbyState();roundReady(R);return;
+      R.dic={};R.ph='play';R.st='starting';R.chain=[];R.cs=[];R.last='';R.need=[];R.cur=0;R.rt=R.time*1000;R.tt=15000-1400*speed(R.rt);R.ftl=R.tt;R.frt=R.rt;
+      say(R,{k:'a',m:'게임을 시작합니다!'});lobbyState();bcast(R);R.tm=setTimeout(()=>roundReady(R),2000);return;
     }
     if(m.t=='word'&&typeof m.w=='string'){
       const w=m.w.trim();
