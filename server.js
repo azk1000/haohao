@@ -159,7 +159,7 @@ wss.on('connection',ws=>{
       if(!(R.ph=='play'&&R.st=='turn'&&R.cur==u.id)||w.length<2||!R.need.includes(w[0])){
         if(w)say(R,{k:'u',n:u.name,m:w.slice(0,100)});return;
       }
-      const e=check(R,w);if(e){send(ws,{t:'x',w});return}
+      const e=check(R,w);if(e){for(const p of R.players.values())send(p.ws,{t:'x',w,by:u.id});return}
       clearTimeout(R.tm);const t=Date.now()-R.ta;
       const sc=Math.round(preScore(w,R.chain,1-t/R.tt)*(R.dic[w]?15/(R.dic[w]+15):1));
       R.dic[w]=(R.dic[w]||0)+1;R.chain.push(w);R.cs.push(sc);R.rt-=t;R.sc[u.id]=(R.sc[u.id]||0)+sc;
